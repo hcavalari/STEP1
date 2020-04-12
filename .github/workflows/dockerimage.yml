@@ -17,23 +17,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Build Image
-        run: docker build . --file ../../DockerFile --tag step1:latest
-        
-      - name: Log into registry
-        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login ${{ secrets.DOCKER_REGISTRY_URL }} -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
-
-      - name: Push image
-        run: |
-          IMAGE_ID=${{ secrets.DOCKER_REGISTRY_URL }}/${{ secrets.DOCKER_REPOSITORY_NAME }}/$IMAGE_NAME
-          # Strip git ref prefix from version
-          VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
-          # Strip "v" prefix from tag name
-          [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
-          # Use Docker `latest` tag convention
-          [ "$VERSION" == "master" ] && VERSION=latest
-          echo IMAGE_ID=$IMAGE_ID
-          echo VERSION=$VERSION
-
-          docker tag image $IMAGE_ID:$VERSION
-          docker push $IMAGE_ID:$VERSION
+      - name: Docker Action
+        uses: zenato/docker-action@v1.0.0
+        with:
+            # Registry username
+            username: ${{ secrets.DOCKER_USERNAME }}
+            # Registry password
+            password: ${{ secrets.DOCKER_PASSWORD }}
+            # Repository on registry
+            repository: ${{ secrets.DOCKER_REPOSITORY_NAME }}
+            # Registry hostname
+            registry: ${{ secrets.DOCKER_REGISTRY_URL }}
+            # Image tag
+            tag: latest
