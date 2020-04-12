@@ -1,0 +1,6 @@
+{
+    "PDF_FOLDER": "//usr/local/aplicativo/leiautes-do-esocial-v2-5-cons-ate-nt-17-2019",
+    "HQL_FOLDER": "/usr/local/aplicativo/resultado_scripts",
+    "HQL_UNORMED_FOLDER": "/usr/local/aplicativo/resultado_scripts/hqls_unormed",
+    "DB_LOCATION": "esocial"
+}
