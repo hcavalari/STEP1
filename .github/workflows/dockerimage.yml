@@ -28,5 +28,4 @@ jobs:
             repository: ${{ secrets.DOCKER_REPOSITORY_NAME }}
             # Registry hostname
             registry: ${{ secrets.DOCKER_REGISTRY_URL }}
-            # Image tag
-            tag: latest
+
