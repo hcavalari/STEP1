@@ -6,6 +6,12 @@ ENV LANG C.UTF-8
 
 ENV PYTHON_VERSION 3.7.7
 
+RUN mkdir /usr/local/aplicativo
+RUN mkdir /usr/local/aplicativo/resultado_script
+RUN mkdir /usr/local/aplicativo/resultado_script/hqls_unormed
+
+COPY application /usr/local/aplicativo
+
 RUN set -ex \
 	&& apk add --no-cache --virtual .fetch-deps \
 		gnupg \
@@ -21,61 +27,7 @@ RUN set -ex \
 	&& rm -rf "$GNUPGHOME" python.tar.xz.asc \
 	&& mkdir -p /usr/src/python \
 	&& tar -xJC /usr/src/python --strip-components=1 -f python.tar.xz \
-	&& rm python.tar.xz \
-	\
-	&& apk add --no-cache --virtual .build-deps  \
-		bluez-dev \
-		bzip2-dev \
-		coreutils \
-		dpkg-dev dpkg \
-		expat-dev \
-		findutils \
-		gcc \
-		gdbm-dev \
-		libc-dev \
-		libffi-dev \
-		libnsl-dev \
-		libtirpc-dev \
-		linux-headers \
-		make \
-		ncurses-dev \
-		openssl-dev \
-		pax-utils \
-		readline-dev \
-		sqlite-dev \
-		tcl-dev \
-		tk \
-		tk-dev \
-		util-linux-dev \
-		xz-dev \
-		zlib-dev \
-# add build deps before removing fetch deps in case there's overlap
-	&& apk del --no-network .fetch-deps \
-	\
-	&& cd /usr/src/python \
-	&& gnuArch="$(dpkg-architecture --query DEB_BUILD_GNU_TYPE)" \
-	&& ./configure \
-		--build="$gnuArch" \
-		--enable-loadable-sqlite-extensions \
-		--enable-optimizations \
-		--enable-option-checking=fatal \
-		--enable-shared \
-		--with-system-expat \
-		--with-system-ffi \
-		--without-ensurepip \
-	&& make -j "$(nproc)" \
-# set thread stack size to 1MB so we don't segfault before we hit sys.getrecursionlimit()
-# https://github.com/alpinelinux/aports/commit/2026e1259422d4e0cf92391ca2d3844356c649d0
-		EXTRA_CFLAGS="-DTHREAD_STACK_SIZE=0x100000" \
-	&& make install \
-	\
-	&& find /usr/local -type f -executable -not \( -name '*tkinter*' \) -exec scanelf --needed --nobanner --format '%n#p' '{}' ';' \
-		| tr ',' '\n' \
-		| sort -u \
-		| awk 'system("[ -e /usr/local/lib/" $1 " ]") == 0 { next } { print "so:" $1 }' \
-		| xargs -rt apk add --no-cache --virtual .python-rundeps \
-	&& apk del --no-network .build-deps \
-	&& python3 --version
+	&& rm python.tar.xz 
 
 # make some useful symlinks that are expected to exist
 RUN cd /usr/local/bin \
@@ -109,14 +61,6 @@ RUN set -ex; \
 			\( -type f -a \( -name '*.pyc' -o -name '*.pyo' \) \) \
 		\) -exec rm -rf '{}' +; \
 	rm -f get-pip.py
-
-CMD ["python3"]
-
-RUN mkdir /usr/local/aplicativo
-RUN mkdir /usr/local/aplicativo/resultado_script
-RUN mkdir /usr/local/aplicativo/resultado_script/hqls_unormed
-
-COPY application /usr/local/aplicativo
 
 RUN set -ex \
         && python3 /usr/local/aplicativo/pdf2txt.py \
